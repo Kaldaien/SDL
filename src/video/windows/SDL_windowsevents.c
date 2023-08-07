@@ -877,7 +877,14 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             break;
         }
 
-        GetRawInputData(hRawInput, RID_INPUT, &inp, &size, sizeof(RAWINPUTHEADER));
+        /* If this is an HID event, it will return -1 with an Insufficient Buffer error.
+          
+           Rather than call this twice to retrieve the header and then determine the type,
+           expect it to fail and ignore the error.
+         */
+        if ((int)GetRawInputData(hRawInput, RID_INPUT, &inp, &size, sizeof(RAWINPUTHEADER)) < 0) {
+            break;
+        }
 
         /* Mouse data (ignoring synthetic mouse events generated for touchscreens) */
         if (inp.header.dwType == RIM_TYPEMOUSE) {
